@@ -1,5 +1,7 @@
 @typeparam TItem
-<th @attributes="@Attributes" class="@CssClass" scope="col" style="@Column.GetStyle(true, true)" @onmouseup=@(args => Grid.EndColumnReorder(args, ColumnIndex)) >
+@if(Column.Columns == null && HeaderRowIndex < Grid.deepestChildColumnLevel)
+{
+<th rowspan="@(Grid.deepestChildColumnLevel + 1)" @attributes="@Attributes" class="@CssClass" scope="col" style="@Column.GetStyle(true, true)" @onmouseup=@(args => Grid.EndColumnReorder(args, ColumnIndex)) >
     <div @onclick='@((args) => Grid.OnSort(args, Column))' style="width:100%">
         @if (Grid.AllowColumnReorder && Column.Reorderable || Grid.AllowGrouping && Column.Groupable)
         {
@@ -110,6 +112,16 @@
         }
     </div>
 </th>
+}
+else if(Column.Columns != null)
+{
+
+    @foreach(var column in Column.columns)
+    {
+        <RadzenDataGridHeaderCell HeaderRowIndex="@HeaderRowIndex" Grid="@Grid" Column="@Column" ColumnIndex="@ColumnIndex" 
+            CssClass="@($"rz-unselectable-text {(Grid.AllowSorting && column.Sortable ? "rz-sortable-column" : "")} {column.HeaderCssClass} {Grid.getFrozenColumnClass(column, Grid.ColumnsCollection.Where(c => c.Visible).ToList())}")" />
+    }
+}
 @code {
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object> Attributes { get; set; }
@@ -119,6 +131,9 @@
 
     [Parameter]
     public int ColumnIndex { get; set; }
+
+    [Parameter]
+    public int HeaderRowIndex { get; set; }
 
     [Parameter]
     public RadzenDataGrid<TItem> Grid { get; set; }
